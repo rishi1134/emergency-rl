@@ -26,7 +26,7 @@ class CustomObservationFunction(ObservationFunction):
 
     def observation_space(self) -> spaces.Box:
         return spaces.Box(
-            low=np.array([0 for _ in self.ts.lanes] + [0]),
+            low=np.array([0]*self.ts.lanes + [0]),
             high=np.array([self.ts.lanes_length[lane] / (self.ts.MIN_GAP + 5.0) for lane in self.ts.lanes] + [3]), 
             dtype=np.int32
         )

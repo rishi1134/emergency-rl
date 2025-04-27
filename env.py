@@ -410,6 +410,18 @@ class SumoEnvironment(gym.Env):
         speeds = [self.sumo.vehicle.getSpeed(vehicle) for vehicle in vehicles]
         waiting_times = [self.sumo.vehicle.getWaitingTime(vehicle) for vehicle in vehicles]
         num_backlogged_vehicles = len(self.sumo.simulation.getPendingVehicles())
+       
+        emer_waiting_times = {}
+        if len(vehicles) != 0:
+            for veh_id in vehicles:
+                laneID = self.sumo.vehicle.getLaneID(veh_id)
+                if self.sumo.vehicle.getTypeID(veh_id) == "rescue" and laneID in self.traffic_signals['t'].lanes:
+                    if veh_id not in emer_waiting_times:
+                        emer_waiting_times[veh_id.split(".")[0]] = self.sumo.vehicle.getWaitingTime(veh_id)
+                    else:
+                        emer_waiting_times[veh_id.split(".")[0]] += self.sumo.vehicle.getWaitingTime(veh_id)
+
+
         return {
             "system_total_running": len(vehicles),
             "system_total_backlogged": num_backlogged_vehicles,
@@ -422,6 +434,7 @@ class SumoEnvironment(gym.Env):
             "system_total_waiting_time": sum(waiting_times),
             "system_mean_waiting_time": 0.0 if len(vehicles) == 0 else np.mean(waiting_times),
             "system_mean_speed": 0.0 if len(vehicles) == 0 else np.mean(speeds),
+            "emergency_waiting_time": emer_waiting_times
         }
 
     def _get_per_agent_info(self):

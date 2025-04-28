@@ -53,8 +53,11 @@ class CustomEmergencyObservationFunction(ObservationFunction):
                     emer_lane[laneID] = 1
         else:
             emer_lane = [0]*len(self.ts.lanes)
-        observation = np.array(lanes_queue + current_phase_index + emer_lane, dtype=np.int32)
-        print(observation)
+        lanes_queue = self.normalize(lanes_queue)
+        observation = np.array(lanes_queue + current_phase_index + emer_lane, dtype=np.float32)
+        # print("--")
+        # print(observation)
+        # print(current_phase_index, [self.ts.phase])
         return observation
 
     def observation_space(self) -> spaces.Box:
@@ -63,3 +66,12 @@ class CustomEmergencyObservationFunction(ObservationFunction):
             high=np.array([self.ts.lanes_length[lane] / (self.ts.MIN_GAP + 5.0) for lane in self.ts.lanes] + [3] + [1]*len(self.ts.lanes)), 
             dtype=np.int32
         )
+    
+    # assuming that 60 is max per lane (I tested it empirically)
+    def normalize(self, lanes_queue):
+        return [round(item / 60, 2) for item in lanes_queue]
+        
+    # to check max capacity of lanes in terms of vehicles, currently it is 60
+    def get_capacities(self):
+        return {lane: self.ts.lanes_length[lane] / (self.ts.MIN_GAP + self.ts.sumo.lane.getLastStepLength(lane))
+                for lane in self.ts.lanes}

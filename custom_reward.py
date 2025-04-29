@@ -15,7 +15,16 @@ def emergency_reward_fn(traffic_signal):
     # print((alpha * reward) + (-1 * ((1 - alpha) * traffic_signal.get_total_queued())), alpha * reward, (-1 * ((1 - alpha) * traffic_signal.get_total_queued())))
     if reward == 0:
         # print(-1 * traffic_signal.get_total_queued())
-        return -1 * traffic_signal.get_total_queued()
+        max_q = 0
+        n_t = 0
+        w_t = 0
+        for lane in traffic_signal.lanes:
+            if "n_t" in lane:
+                n_t += traffic_signal.sumo.lane.getLastStepVehicleNumber(lane)
+            if "w_t" in lane:
+                w_t += traffic_signal.sumo.lane.getLastStepVehicleNumber(lane)
+        return -1 * (traffic_signal.get_total_queued() + max(n_t, w_t))
+        # return -1 * (max(n_t, w_t))
     # print((alpha * reward) + (-1 * ((1 - alpha) * traffic_signal.get_total_queued())))
     # return (alpha * reward) + (-1 * ((1 - alpha) * traffic_signal.get_total_queued()))
     # print(reward)

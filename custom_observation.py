@@ -41,7 +41,11 @@ class CustomEmergencyObservationFunction(ObservationFunction):
             self.ts.sumo.lane.getLastStepVehicleNumber(lane)
             for lane in self.ts.lanes
         ]
-        current_phase_index = [self.ts.sumo.trafficlight.getPhase(self.ts.id)]
+        current_phase_index = [0 for i in range(len(self.ts.lanes))]
+        current_phase_index[self.ts.sumo.trafficlight.getAllProgramLogics(self.ts.id)[0].currentPhaseIndex] = 1
+        # print(current_phase_index)
+        # current_phase_index = [self.ts.sumo.trafficlight.getPhase(self.ts.id)]
+        # current_phase_index = [self.ts.sumo.trafficlight.getAllProgramLogics(self.ts.id)[0].currentPhaseIndex]
         emer_lane = [0]*len(self.ts.lanes)
 
         vehicle_ids = self.ts.sumo.vehicle.getIDList()
@@ -53,7 +57,10 @@ class CustomEmergencyObservationFunction(ObservationFunction):
                     emer_lane[laneID] = 1
         else:
             emer_lane = [0]*len(self.ts.lanes)
+        # print(lanes_queue)
         lanes_queue = self.normalize(lanes_queue)
+        # print(lanes_queue)
+        # print(len(lanes_queue))
         observation = np.array(lanes_queue + current_phase_index + emer_lane, dtype=np.float32)
         # print("--")
         # print(observation)
@@ -69,7 +76,7 @@ class CustomEmergencyObservationFunction(ObservationFunction):
     
     # assuming that 60 is max per lane (I tested it empirically)
     def normalize(self, lanes_queue):
-        return [round(item / 60, 2) for item in lanes_queue]
+        return [round(item / 20, 2) for item in lanes_queue]
         
     # to check max capacity of lanes in terms of vehicles, currently it is 60
     def get_capacities(self):

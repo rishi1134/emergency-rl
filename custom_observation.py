@@ -41,7 +41,8 @@ class CustomEmergencyObservationFunction(ObservationFunction):
             self.ts.sumo.lane.getLastStepVehicleNumber(lane)
             for lane in self.ts.lanes
         ]
-        current_phase_index = [0 for i in range(len(self.ts.lanes))]
+        # print(len(self.ts.lanes))
+        current_phase_index = [0 for i in range(len(self.ts.sumo.trafficlight.getAllProgramLogics(self.ts.id)[0].phases))]
         current_phase_index[self.ts.sumo.trafficlight.getAllProgramLogics(self.ts.id)[0].currentPhaseIndex] = 1
         # print(current_phase_index)
         # current_phase_index = [self.ts.sumo.trafficlight.getPhase(self.ts.id)]
@@ -61,6 +62,7 @@ class CustomEmergencyObservationFunction(ObservationFunction):
         lanes_queue = self.normalize(lanes_queue)
         # print(lanes_queue)
         # print(len(lanes_queue))
+        # print(len(current_phase_index))
         observation = np.array(lanes_queue + current_phase_index + emer_lane, dtype=np.float32)
         # print("--")
         # print(observation)
